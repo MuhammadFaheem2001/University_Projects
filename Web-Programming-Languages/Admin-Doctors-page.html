@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test-Doctor</title>
+</head>
+<style>
+    /* Your Original Styles */
+    .container1 {
+        border: 2px solid grey;
+        width: 200px;
+        height: 578px;
+        float: left;
+    }
+
+    .container2 {
+        border-left: 2px solid grey;
+        height: 578px;
+        float: right;
+        width: calc(100% - 210px); /* Adjusted to prevent overflow */
+    }
+
+    .sub-container1 {
+        text-align: center;
+    }
+
+    .list {
+        margin-top: 35px;
+        margin-right: 38px;
+        margin-left: -2px;
+        text-align: center;
+    }
+
+    .list ul li {
+        list-style-type: none;
+        padding-bottom: 30px;
+    }
+
+    .list ul li a {
+        text-decoration: none;
+        color: black;
+    }
+
+    .list ul li a:hover {
+        border: 2px solid blue;
+        color: blue;
+        border-left: blue;
+    }
+
+    .logout-butt {
+        background-color: #E6F2FB;
+        color: #3A8DDE;
+        border-radius: 6px;
+        border: none;
+        padding: 8px 16px;
+        width: 135px;
+    }
+
+    .con1 {
+        width: 100%;
+        height: 88px;
+    }
+
+    .con2 {
+        width: 100%;
+        height: 42px;
+    }
+
+    .con3 {
+        width: 100%;
+        height: 388px;
+    }
+
+    .search {
+        width: 113px;
+        float: left;
+    }
+
+    .search-box {
+        width: 450px;
+        margin-left: 316px;
+        height: 31px;
+        margin-top: 7px;
+    }
+
+    .date {
+        background-color: rgb(183, 180, 180);
+        float: right;
+        margin-top: -69px;
+        margin-right: 5px;
+        width: 170px;
+        height: 42px;
+        text-align: center;
+        padding-top: 5px;
+    }
+
+    .back {
+        width: 80px;
+        margin: 13px;
+        background-color: #E6F2FB;
+        color: #3A8DDE;
+        border-radius: 6px;
+        border: none;
+        padding: 8px 16px;
+    }
+
+    .search-butt {
+        width: 100px;
+        height: 30px;
+        background-color: #E6F2FB;
+        color: #3A8DDE;
+        border: none;
+        margin-left: 360px;
+        margin-top: 10px;
+    }
+
+    .add h4 {
+        width: 188px;
+        margin-left: 67px;
+        margin-top: 7px;
+    }
+
+    .add-new button {
+        float: right;
+        margin-top: -42px;
+        margin-right: 9px;
+        width: 120px;
+    }
+
+    .table {
+        width: 100%;
+        height: 100%;
+    }
+
+    .table tr {
+        text-align: center;
+    }
+
+    .table th {
+        border-bottom: 2px solid rgb(171, 168, 168);
+    }
+
+    .table0 {
+        width: 100%;
+        overflow-x: auto; /* Allows table to scroll on tiny screens */
+    }
+
+    .event {
+        background-color: #E6F2FB;
+        color: #3A8DDE;
+        border: none;
+    }
+
+    p {
+        margin-left: 10px;
+    }
+
+    /* --- RESPONSIVENESS ADDED BELOW --- */
+
+    /* Tablet Styles */
+    @media (max-width: 1024px) {
+        .container2 {
+            width: calc(100% - 205px);
+        }
+        .search-box {
+            width: 40%;
+            margin-left: 20px;
+        }
+        .search-butt {
+            margin-left: 20px;
+        }
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+        .container1, .container2 {
+            width: 100%;
+            float: none;
+            height: auto;
+            border: none;
+        }
+        .container1 {
+            border-bottom: 2px solid grey;
+            padding-bottom: 20px;
+        }
+        .list ul {
+            padding: 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .list ul li {
+            padding: 10px;
+        }
+        .search-box {
+            width: 90%;
+            margin: 10px auto;
+            float: none;
+        }
+        .search-butt {
+            margin: 5px auto;
+            display: block;
+        }
+        .date {
+            float: none;
+            margin: 10px auto;
+            width: 95%;
+            height: auto;
+        }
+        .con1 {
+            height: auto;
+            text-align: center;
+        }
+        .add-new button {
+            margin-top: 10px;
+            float: none;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .add h4 {
+            margin-left: 0;
+            width: 100%;
+            text-align: center;
+        }
+        .table0 {
+            display: block;
+            overflow-x: auto; /* Essential for mobile tables */
+        }
+    }
+</style>
+<body>
+    <div class="container1">
+            <div class="sub-container1">
+               <img style="width: 100px;" class="image" src="data:image/jpeg;base64,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" alt="">
+                <p><b>TEST DOCTOR</b><br> testdoc@gmail.com</p>
+                <button class="logout-butt">Logout</button>
+
+            </div>
+
+        <hr>
+
+        <div class="list">
+            <ul>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Doctors</a></li>
+                <li><a href="#">Schedule</a></li>
+                <li><a href="#">Appointment</a></li>
+                <li><a href="#">Patients</a></li>
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="container2">
+
+        <div class="con1">
+            <div class="search">
+                <button class="back">Back</button>
+
+            </div>
+
+            <div class="search-box">
+              <input type="search" name="search" id="" placeholder="Enter Your Query Here!" style="text-align: center; width: 100%; height: 100%;" required>  
+            </div>
+
+            <div class="search-button">
+                <button type="search" class="search-butt" onclick="window.alert('This button is not functional right now!')">Search</button>
+            </div>
+
+            <div class="date-time">
+                 <p class="date" onclick="showDateTime()"></p>
+            </div>
+
+        </div>
+
+        <div class="con2">
+            <div class="add">
+                <h4>Add New Doctors</h4>
+            </div>
+
+            <div class="add-new">
+                <Button type="button">+ Add New</Button:button>
+            </div>
+        </div>
+        <p>Add Doctor</p>
+        <div class="con3">
+            <div class="table0">
+            <table class="table">
+              <tr>
+                <th>Doctor Name</th>
+                <th>Email</th>
+                <th>Specialities</th>
+                <th>Events</th>
+              </tr>
+
+              <tr>
+                <td>Muhammad Faheem</td>
+                <td>Rizwan Zahid</td>
+                <td>Bilal Khatak</td>
+                <td><button class="event" type="button">Edit</button>
+                    <button class="event" type="button">View</button>
+                    <button class="event" type="button">Remove</button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Muhammad Faheem</td>
+                <td>Rizwan Zahid</td>
+                <td>Bilal Khatak</td>
+                <td><button class="event" type="button">Edit</button>
+                    <button class="event" type="button">View</button>
+                    <button class="event" type="button">Remove</button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Muhammad Faheem</td>
+                <td>Rizwan Zahid</td>
+                <td>Bilal Khatak</td>
+                <td><button class="event" type="button">Edit</button>
+                    <button class="event" type="button">View</button>
+                    <button class="event" type="button">Remove</button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Muhammad Faheem</td>
+                <td>Rizwan Zahid</td>
+                <td>Bilal Khatak</td>
+                <td><button class="event" type="button">Edit</button>
+                    <button class="event" type="button">View</button>
+                    <button class="event" type="button">Remove</button>
+                </td>
+              </tr>
+
+              <tr>
+                <td>Muhammad Faheem</td>
+                <td>Rizwan Zahid</td>
+                <td>Bilal Khatak</td>
+                <td><button class="event" type="button">Edit</button>
+                    <button class="event" type="button">View</button>
+                    <button class="event" type="button">Remove</button>
+                </td>
+              </tr>
+            </table>
+        </div>
+        </div>
+
+
+    </div>
+</body>
+<script>
+    function showDateTime() {
+    const now = new Date();
+
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
+
+    document.querySelector('.date').innerHTML = "Today's Date and Time <br>" + date + ' ' + time;
+}
+
+// update every second
+setInterval(showDateTime, 1000);
+
+// initial call
+showDateTime();
+</script>
+</html>

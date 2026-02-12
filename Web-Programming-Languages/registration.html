@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <style>
+        /* ===== RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+        }
+
+        /* ===== REGISTRATION CARD ===== */
+        .form-2 {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            width: 450px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+            color: #fff;
+        }
+
+        /* ===== HEADING ===== */
+        .form-2 h1 {
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* ===== FORM ===== */
+        .Register-page label {
+            display: block;
+            text-align: left;
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .Register-page input[type="text"],
+        .Register-page input[type="email"],
+        .Register-page input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .Register-page input:focus {
+            box-shadow: 0 0 0 2px #ffffff;
+        }
+
+        /* ===== GENDER ===== */
+        .gender {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .gender label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== BUTTON ===== */
+        .button-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #185a9d;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button-submit:hover {
+            background: #f1f1f1;
+            transform: translateY(-2px);
+        }
+
+        /* ===== LINK ===== */
+        .Register-page p {
+            margin-top: 20px;
+        }
+
+        .Register-page p a {
+            color: #ffffff;
+            font-size: 13px;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
+        .Register-page p a:hover {
+            text-decoration: underline;
+            opacity: 1;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .form-2 {
+                width: 90%;
+                padding: 30px 20px;
+            }
+
+            .form-2 h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-2">
+        <h1>Create Account 📝</h1>
+
+        <form class="Register-page" method="post">
+
+            <label>Full Name</label>
+            <input type="text" name="fullname" placeholder="Enter your name" required>
+
+            <label>Age</label>
+            <input type="number" name="age" placeholder="Enter your age" required>
+
+            <label>Email</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+
+            <label>Gender</label>
+            <div class="gender">
+                <label>
+                    <input type="radio" name="gender" required> Male
+                </label>
+                <label>
+                    <input type="radio" name="gender"> Female
+                </label>
+            </div>
+
+            <input type="submit" class="button-submit" value="Register">
+
+            <p>
+                <a href="login.html" target="_blank">
+                    Already a user? Login here
+                </a>
+            </p>
+
+        </form>
+    </div>
+
+</body>
+</html>

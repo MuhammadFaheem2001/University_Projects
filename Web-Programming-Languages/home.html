@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOME</title>
+
+<style>
+
+#container{
+    border-radius: 25px;
+    width: 613px;
+    height: fit-content;
+    margin: 2px 327px;
+    position: sticky;
+    top: 0;
+    overflow: hidden;
+}
+
+#container ul li{
+    display: inline-block;
+    margin: 0px 28px;
+}
+
+#container ul li a{
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 2px solid blue;
+    color: black;
+}
+
+#container ul li a:hover{
+    background-color: black;
+    color: blue;
+}
+
+.login-button{
+    border-radius: 25px;
+    width: 261px;
+    height: fit-content;
+    margin: -55px 1084px;
+}
+
+.login-button ul li{
+    display: inline-block;
+    margin: -11px 10px;
+}
+
+.login-button ul li a{
+    text-decoration: none;
+    padding: 10px 15px;
+    color: black;
+}
+
+.login-button ul li a:hover{
+    background-color: black;
+    color: blue; 
+}
+
+.content{
+    border: 2px solid black;
+    border-radius: 25px;
+    margin-top: 135px;
+    margin-right: 225px;
+    margin-left: 210px;
+    padding: 56px;
+    text-align: center;
+}
+
+.content:hover{
+    background-color: black;
+    color: white;
+}
+
+.name{
+    margin-top: 42px;
+}
+
+/* ===== RESPONSIVE FIX (ADDED ONLY) ===== */
+
+/* Tablets */
+@media (max-width: 1024px) {
+
+    #container{
+        width: 100%;
+        margin: 10px auto;
+        text-align: center;
+    }
+
+    .login-button{
+        width: 100%;
+        margin: 10px auto;
+        text-align: center;
+    }
+
+    .content{
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    #container ul li{
+        display: block;
+        margin: 10px 0;
+    }
+
+    .login-button ul li{
+        display: block;
+        margin: 10px 0;
+    }
+
+    .login-button{
+        margin: 15px auto;
+    }
+
+    .content{
+        margin: 30px 20px;
+        padding: 25px;
+    }
+
+    .content h1{
+        font-size: 20px;
+    }
+
+    .content p{
+        font-size: 14px;
+    }
+
+    .name{
+        text-align: center;
+    }
+}
+
+.butt4{
+    background-color: blue;
+    color: white;
+}
+
+.butt4:hover{
+    background-color: red;
+    color: white;
+}
+
+</style>
+</head>
+
+<body>
+
+    <div id="container">
+        <ul>
+            <li><a href="">Home</a></li>
+            <li><a href="">About</a></li>
+            <li><a href="">Services</a></li>
+            <li><a href="">Contact</a></li>
+        </ul>
+    </div>
+
+    <div class="login-button">
+        <ul>
+            <li><a href="login.html" target="_blank">Login</a></li>
+            <li><a href="registration.html" target="_blank">Registration</a></li>
+        </ul>
+    </div>
+
+    <div class="name" onclick="window.alert('Dont Touch')">
+        <p><b>eDoc</b> | Professional Doctors</p>
+    </div>
+
+    <div class="content">
+        <h1>eDOC | Humare yahan kaam tasali baksh hota hai</h1>
+        <p>
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Delectus voluptate, hic voluptatibus nihil, quo mollitia voluptates cum, error qui ratione neque esse quaerat dolorum sint accusamus eos debitis in soluta nobis quibusdam dolore quos quod perspiciatis. Eligendi soluta pariatur impedit molestiae natus deleniti eaque laborum quo omnis, rerum aliquid sit delectus nobis, neque fuga. Itaque est excepturi magni iusto ad, dolores repellat eligendi. Quia, iusto quos, labore in dolorem dolore sint amet explicabo ipsam sit magni illo consectetur. Laudantium cumque laborum hic repellat laboriosam alias tenetur aut architecto quam similique, dolorem ea id voluptate soluta tempore iure odit amet porro!
+        </p>
+        <button class="butt4" style="width: 230px; height: 35px; border-radius: 25px; border: 2px solid black;">
+            Make a Appointment
+        </button>
+    </div>
+
+</body>
+</html>
