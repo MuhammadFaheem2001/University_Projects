@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Explainability · TB Outcome Panel</title>
+<meta name="description" content="SHAP-based explanation of the TB outcome model's predictions.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html" class="active">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:36px;">
+  <div class="container">
+    <span class="eyebrow">SHapley Additive exPlanations</span>
+    <h1 style="max-width:22ch;">Why the model says what it says</h1>
+    <p class="lede">A model that flags risk without explaining itself is hard for a clinician to
+    trust. SHAP values quantify exactly how much each biomarker pushed a prediction up or down
+    from the cohort's baseline failure rate of 47.1%.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2">
+    <div class="panel">
+      <h3 class="mt-0">Global feature importance</h3>
+      <p class="small">Average SHAP contribution across the 218-patient test set. 5′-NT and uric
+      acid dominate; the remaining four features contribute smaller, still-positive amounts.</p>
+      <div class="chart-box" id="global-shap"></div>
+    </div>
+    <div class="panel">
+      <h3 class="mt-0">Reading a waterfall chart</h3>
+      <p>Each prediction starts at the baseline probability — 0.471, the average failure rate
+      across the test set — then every biomarker nudges the estimate up or down until it lands
+      on the final predicted probability.</p>
+      <ul class="small">
+        <li><strong>5′-NT (+0.16):</strong> the single largest driver. Elevated levels signal
+        liver stress before treatment even begins.</li>
+        <li><strong>Uric acid (+0.16):</strong> equally influential; pyrazinamide is known to
+        raise uric acid further during treatment.</li>
+        <li><strong>Globulin (+0.12):</strong> reflects immune activity; markedly elevated levels
+        can indicate immune-mediated tissue damage risk.</li>
+        <li><strong>Cystatin C, creatinine, AST (+0.03 each):</strong> smaller but consistently
+        positive — supporting signals of kidney and liver strain.</li>
+      </ul>
+      <a href="predict.html" class="btn btn-teal">Generate a live explanation →</a>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Worked example from the paper</h3>
+      <p class="small">Reproduction of the SHAP waterfall reported for the test-set baseline case (Fig. 3).</p>
+      <div class="chart-box" id="worked-waterfall"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tight bg-alt">
+  <div class="container grid-3">
+    <div class="card">
+      <div class="card-icon">Liver</div>
+      <h3>5′-NT, Globulin, AST</h3>
+      <p class="small">These three markers are closely tied to liver function. Anti-TB drugs —
+      particularly isoniazid and rifampicin — are well-documented causes of drug-induced liver
+      injury via oxidative stress and hepatocyte ferroptosis.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">Kidney</div>
+      <h3>Uric acid, Creatinine, Cystatin C</h3>
+      <p class="small">These reflect renal clearance. Pyrazinamide and ethambutol inhibit renal
+      excretion of uric acid, and baseline elevation predicts a higher risk of treatment-limiting
+      hyperuricemia.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">Read</div>
+      <h3>Interpretation, not causation</h3>
+      <p class="small">SHAP explains what the model learned from correlational patterns in this
+      cohort — it is not proof of a causal mechanism, and should be read alongside clinical
+      judgment.</p>
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+})();
+</script>
+<script src="js/charts.js"></script>
+<script>
+  const globalShap = [
+    { label: "5'-Nucleotidase", value: 0.16 },
+    { label: 'Uric Acid', value: 0.16 },
+    { label: 'Globulin', value: 0.12 },
+    { label: 'Cystatin C', value: 0.03 },
+    { label: 'Creatinine', value: 0.03 },
+    { label: 'AST', value: 0.03 },
+  ];
+  drawHBarChart(document.getElementById('global-shap'),
+    globalShap.map(d => ({ label: d.label, value: d.value, color: '#B5482F' })),
+    { max: 0.2, format: v => '+' + v.toFixed(2) });
+
+  drawWaterfall(document.getElementById('worked-waterfall'), [
+    { label: "5'-NT", value: 0.16 },
+    { label: 'Uric Acid', value: 0.16 },
+    { label: 'Globulin', value: 0.12 },
+    { label: 'Cystatin C', value: 0.03 },
+    { label: 'Creatinine', value: 0.03 },
+    { label: 'AST', value: 0.03 },
+  ]);
+</script>
+</body>
+</html>

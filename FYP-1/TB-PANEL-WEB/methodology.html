@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Methodology · TB Outcome Panel</title>
+<meta name="description" content="Data preprocessing, feature selection, and validation methodology.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html" class="active">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:36px;">
+  <div class="container">
+    <span class="eyebrow">Pipeline</span>
+    <h1 style="max-width:22ch;">From 94 raw indicators to a 6-feature model</h1>
+    <p class="lede">A transparent walk-through of preprocessing, feature selection, model
+    training, and validation — plus the study's own stated limitations.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Pipeline steps</h3>
+      <ol>
+        <li><strong>Cohort assembly.</strong> 2,520 TB patients screened; HIV, pregnancy, and
+        non-active TB excluded, leaving 1,990. Of those, 904 were lost to follow-up and dropped
+        from modelling, leaving 1,086 patients with a confirmed cured/failure outcome.</li>
+        <li><strong>Feature set.</strong> 94 admission-day clinical indicators — demographics,
+        medical history, and routine biochemical results.</li>
+        <li><strong>Train/test split.</strong> 80% training, 20% held-out test, stratified so
+        the test set stays representative of the outcome balance.</li>
+        <li><strong>Feature selection (7 methods).</strong> Mutual Information, F-Test, Spearman,
+        Kendall's tau, Maximal Information Coefficient, T-Test, and Wilcoxon — each independently
+        run on the training set only.</li>
+        <li><strong>Model training (12 classifiers).</strong> AdaBoost, Bagging, Decision Tree,
+        ExtraTrees, Gaussian Naive Bayes, Gradient Boosting, KNN, Logistic Regression, Random
+        Forest, SGD Classifier, SVM, XGBoost.</li>
+        <li><strong>Cross-validation.</strong> 4-fold CV on the training set for each of the 84
+        selection × model combinations, then a single independent evaluation on the held-out test set.</li>
+        <li><strong>Explainability.</strong> SHAP applied to the top-performing models to rank
+        feature contributions.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2">
+    <div class="panel">
+      <h3 class="mt-0">Why Mutual Information</h3>
+      <p>MI quantifies statistical dependency between each candidate feature and the outcome
+      label without assuming a linear relationship — well suited to biochemical markers whose
+      relationship to treatment failure may be threshold-based rather than linear. It also
+      reduced the feature set from 94 to 6 without materially hurting predictive performance,
+      which matters for a tool meant to run on a routine admission panel.</p>
+    </div>
+    <div class="panel">
+      <h3 class="mt-0">Evaluation metrics</h3>
+      <ul class="small">
+        <li><strong>AUC</strong> — overall discrimination between cured and failure across all thresholds.</li>
+        <li><strong>Accuracy</strong> — proportion of correct predictions on the test set.</li>
+        <li><strong>Sensitivity</strong> — proportion of actual failures correctly flagged.</li>
+        <li><strong>Specificity</strong> — proportion of actual cures correctly cleared.</li>
+      </ul>
+      <p class="small">The winning KNN + MI model reached AUC 0.87, accuracy 0.82, sensitivity
+      0.69, specificity 0.92 on the test set — strong at ruling cured patients in, weaker at
+      catching every failure case, a known trade-off under class imbalance.</p>
+    </div>
+  </div>
+</section>
+
+<section class="tight bg-alt">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Stated limitations (from the source study)</h3>
+      <div class="grid-2">
+        <div>
+          <h4>High non-adherence / loss to follow-up</h4>
+          <p class="small">904 of 1,990 eligible patients (≈45%) were lost to follow-up and
+          excluded from modelling, roughly halving the usable sample. Patients lost to follow-up
+          may differ systematically from those retained, introducing potential bias and reducing
+          statistical power.</p>
+        </div>
+        <div>
+          <h4>No external validation</h4>
+          <p class="small">The study was conducted at a single center (Changzhou Third People's
+          Hospital) without validation at other sites. Different hospitals' diagnostic and
+          treatment protocols could shift both the discontinuation criteria and the model's
+          applicability elsewhere.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Wiring this site to a real trained model</h3>
+      <p>The backend (<code>backend/server.py</code>) currently uses a transparent, weighted
+      scoring approximation of the KNN + MI model, calibrated from the SHAP values reported in
+      the paper — useful for demoing the interface, not for clinical inference. To plug in an
+      actual trained model:</p>
+      <ol class="small">
+        <li>Train and export your model: <code>joblib.dump(model, "backend/artifacts/model.pkl")</code></li>
+        <li>Export your fitted scaler the same way, if one was used in training.</li>
+        <li>In <code>server.py</code>, uncomment the <code>MODEL_LOAD</code> block and replace
+        the body of <code>heuristic_predict()</code> with a call to
+        <code>model.predict_proba(...)</code>.</li>
+        <li>Keep the response shape (<code>prediction</code>, <code>probability_failure</code>,
+        <code>contributions</code>, etc.) so the frontend needs no changes.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+})();
+</script>
+</body>
+</html>

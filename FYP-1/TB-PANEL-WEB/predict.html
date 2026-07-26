@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Predict · TB Outcome Panel</title>
+<meta name="description" content="Enter admission biomarker values to estimate TB treatment-failure risk.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html" class="active">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:36px;">
+  <div class="container">
+    <span class="eyebrow">Six-value admission panel</span>
+    <h1 style="max-width:22ch;">Estimate treatment-failure risk from admission bloodwork</h1>
+    <p class="lede">These are the six features the KNN + Mutual-Information model found most
+    predictive. Enter a patient's values below — the gauges and risk score update against the API in real time.</p>
+    <div class="disclaimer" style="max-width:640px;">
+      Demo tool for educational use only. Do not use to make real treatment decisions.
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2" style="align-items:start;">
+
+    <div class="panel">
+      <h3 class="mt-0">Patient admission values</h3>
+      <form id="predict-form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="nt5">5′-Nucleotidase (5′-NT)</label>
+            <input type="number" step="0.1" id="nt5" name="nt5" placeholder="e.g. 9.5" required>
+            <span class="hint">U/L · reference 0–11</span>
+          </div>
+          <div class="field">
+            <label for="uricAcid">Uric acid</label>
+            <input type="number" step="0.1" id="uricAcid" name="uricAcid" placeholder="e.g. 5.4" required>
+            <span class="hint">mg/dL · reference 3.5–7.2</span>
+          </div>
+          <div class="field">
+            <label for="globulin">Globulin</label>
+            <input type="number" step="0.1" id="globulin" name="globulin" placeholder="e.g. 30" required>
+            <span class="hint">g/L · reference 20–35</span>
+          </div>
+          <div class="field">
+            <label for="creatinine">Creatinine</label>
+            <input type="number" step="0.1" id="creatinine" name="creatinine" placeholder="e.g. 70" required>
+            <span class="hint">µmol/L · reference 44–133</span>
+          </div>
+          <div class="field">
+            <label for="cystatinC">Cystatin C</label>
+            <input type="number" step="0.01" id="cystatinC" name="cystatinC" placeholder="e.g. 0.85" required>
+            <span class="hint">mg/L · reference 0.51–1.09</span>
+          </div>
+          <div class="field">
+            <label for="ast">Aspartate transaminase (AST)</label>
+            <input type="number" step="0.1" id="ast" name="ast" placeholder="e.g. 24" required>
+            <span class="hint">U/L · reference 8–40</span>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-teal">Run prediction</button>
+          <button type="button" id="fill-sample" class="btn btn-outline">Fill sample values</button>
+          <button type="reset" id="reset-form" class="btn btn-outline">Clear</button>
+        </div>
+        <p class="small" id="form-status" style="margin-top:12px;"></p>
+      </form>
+    </div>
+
+    <div>
+      <div class="panel">
+        <span class="eyebrow" style="margin-bottom:16px;">Biomarker panel</span>
+        <div class="gauge-strip" id="predict-gauges"></div>
+      </div>
+
+      <div class="panel" id="result-panel" style="display:none;">
+        <span class="eyebrow">Prediction</span>
+        <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;">
+          <h2 id="result-headline" style="margin:0;">—</h2>
+          <span class="badge" id="result-badge">—</span>
+        </div>
+        <p class="small" id="result-sub" style="margin-top:6px;"></p>
+
+        <div style="margin-top:20px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--muted);margin-bottom:6px;">
+            <span>Cured</span><span>Treatment failure</span>
+          </div>
+          <div style="height:10px;border-radius:6px;background:var(--teal-dim);overflow:hidden;display:flex;">
+            <div id="prob-cured" style="background:var(--teal);height:100%;"></div>
+            <div id="prob-failure" style="background:var(--rust);height:100%;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;font-family:var(--mono);margin-top:6px;">
+            <span id="prob-cured-text">—</span><span id="prob-failure-text">—</span>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <h3>What drove this score</h3>
+        <p class="small">Positive (rust) bars push toward treatment failure; negative (teal) bars
+        push toward cured, relative to the cohort's baseline failure rate of 47.1%.</p>
+        <div class="chart-box" id="result-waterfall"></div>
+
+        <hr class="divider">
+        <p class="small">Want to keep a record of this patient? <a href="register.html">Register them to your dashboard →</a></p>
+      </div>
+
+      <div class="panel" id="error-panel" style="display:none;border-color:var(--rust);">
+        <p class="small" style="color:var(--rust);margin:0;" id="error-text"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+})();
+</script>
+<script>
+  const gaugeEl = document.getElementById('predict-gauges');
+  renderGaugeStrip(gaugeEl, {});
+
+  const form = document.getElementById('predict-form');
+  const inputs = ['nt5','uricAcid','globulin','creatinine','cystatinC','ast'];
+
+  function currentValues(){
+    const v = {};
+    inputs.forEach(k => {
+      const raw = document.getElementById(k).value;
+      v[k] = raw === '' ? null : parseFloat(raw);
+    });
+    return v;
+  }
+
+  inputs.forEach(k => {
+    document.getElementById(k).addEventListener('input', () => {
+      renderGaugeStrip(gaugeEl, currentValues());
+    });
+  });
+
+  document.getElementById('fill-sample').addEventListener('click', () => {
+    const sample = { nt5: 14.2, uricAcid: 8.6, globulin: 34, creatinine: 95, cystatinC: 1.02, ast: 52 };
+    Object.entries(sample).forEach(([k,v]) => document.getElementById(k).value = v);
+    renderGaugeStrip(gaugeEl, sample);
+  });
+
+  document.getElementById('reset-form').addEventListener('click', () => {
+    setTimeout(() => renderGaugeStrip(gaugeEl, {}), 0);
+    document.getElementById('result-panel').style.display = 'none';
+    document.getElementById('error-panel').style.display = 'none';
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const status = document.getElementById('form-status');
+    const errorPanel = document.getElementById('error-panel');
+    const resultPanel = document.getElementById('result-panel');
+    errorPanel.style.display = 'none';
+    status.textContent = 'Scoring…';
+
+    try {
+      const result = await TBApi.predict(currentValues());
+      status.textContent = '';
+      renderResult(result);
+    } catch (err) {
+      status.textContent = '';
+      document.getElementById('error-text').textContent =
+        'Could not reach the prediction API (' + err.message + '). Is backend/server.py running on port 5000?';
+      errorPanel.style.display = 'block';
+      resultPanel.style.display = 'none';
+    }
+  });
+
+  function renderResult(result){
+    const panel = document.getElementById('result-panel');
+    panel.style.display = 'block';
+
+    const failurePct = Math.round(result.probability_failure * 100);
+    const curedPct = 100 - failurePct;
+    const isFailure = result.prediction === 'treatment_failure';
+
+    document.getElementById('result-headline').textContent = isFailure ? 'Elevated risk of treatment failure' : 'Likely favorable outcome';
+    const badge = document.getElementById('result-badge');
+    badge.textContent = result.risk_level + ' risk';
+    badge.className = 'badge ' + (result.risk_level === 'high' ? 'badge-rust' : result.risk_level === 'moderate' ? 'badge-amber' : 'badge-teal');
+
+    document.getElementById('result-sub').textContent =
+      `Model estimate: ${failurePct}% probability of treatment failure (cohort baseline 47.1%). ${result.model_used}`;
+
+    document.getElementById('prob-cured').style.width = curedPct + '%';
+    document.getElementById('prob-failure').style.width = failurePct + '%';
+    document.getElementById('prob-cured-text').textContent = curedPct + '% cured';
+    document.getElementById('prob-failure-text').textContent = failurePct + '% failure';
+
+    const waterfallData = result.contributions.map(c => ({ label: c.label, value: c.contribution }));
+    drawWaterfall(document.getElementById('result-waterfall'), waterfallData, { ariaLabel: 'Feature contribution chart' });
+
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>

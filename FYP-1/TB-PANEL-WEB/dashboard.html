@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Dashboard · TB Outcome Panel</title>
+<meta name="description" content="Your registered patients and saved risk scores.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="guarded-content" style="display:none;">
+  <section class="hero" style="padding-bottom:28px;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+      <div>
+        <span class="eyebrow">Signed in as <span id="user-name-eyebrow"></span></span>
+        <h1 style="max-width:20ch;">Your patients</h1>
+        <p class="lede" style="margin:0;">Everything you've registered, most recent first.</p>
+      </div>
+      <a href="register.html" class="btn btn-teal">+ Register a patient</a>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="stat-row" id="dash-stats"></div>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="panel">
+        <h3 class="mt-0">Registered patients</h3>
+        <p class="small">Register the same patient ID again on a follow-up visit to build a
+        history — click "History" on any row to see every admission on file for that patient.</p>
+        <div id="empty-state" class="small" style="display:none;padding:24px 0;">
+          You haven't registered any patients yet. <a href="register.html">Register your first patient →</a>
+        </div>
+        <div class="table-wrap">
+          <table id="patients-table" style="display:none;">
+            <thead>
+              <tr>
+                <th>Patient</th><th>Age / Sex</th><th>5′-NT</th><th>Uric acid</th>
+                <th>Globulin</th><th>Risk</th><th>Probability</th><th>Registered</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="patients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" id="history-panel" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
+          <h3 class="mt-0">History for <span id="history-ref" class="mono"></span></h3>
+          <button class="pill-btn" id="history-close">Close ×</button>
+        </div>
+        <div class="table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Visit date</th><th>5′-NT</th><th>Uric acid</th><th>Globulin</th>
+                <th>Creatinine</th><th>Cystatin C</th><th>AST</th><th>Risk</th><th>Probability</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody"></tbody>
+          </table>
+        </div>
+        <div class="chart-box" id="history-trend" style="margin-top:20px;"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>You need an account to view a dashboard</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  (async () => {
+    const user = await requireAuth(['doctor', 'admin']);
+    if (!user) {
+      document.getElementById('guard-notice').style.display = 'block';
+      return;
+    }
+    document.getElementById('guarded-content').style.display = 'block';
+    document.getElementById('user-name-eyebrow').textContent = user.name;
+    loadPatients();
+  })();
+
+  function riskBadgeClass(level){
+    return level === 'high' ? 'badge-rust' : level === 'moderate' ? 'badge-amber' : 'badge-teal';
+  }
+
+  function fmtDate(iso){
+    try {
+      return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch (_) { return iso; }
+  }
+
+  async function loadPatients(){
+    let patients = [];
+    try {
+      patients = await TBApi.listPatients();
+    } catch (err) {
+      document.getElementById('empty-state').textContent = 'Could not load your patients: ' + err.message;
+      document.getElementById('empty-state').style.display = 'block';
+      return;
+    }
+
+    const total = patients.length;
+    const highRisk = patients.filter(p => p.prediction && p.prediction.risk_level === 'high').length;
+    const avgProb = total ? Math.round(
+      (patients.reduce((s, p) => s + (p.prediction ? p.prediction.probability_failure : 0), 0) / total) * 100
+    ) : 0;
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-cell"><span class="num">${total}</span><span class="lab">Registered patients</span></div>
+      <div class="stat-cell"><span class="num text-rust">${highRisk}</span><span class="lab">Flagged high risk</span></div>
+      <div class="stat-cell"><span class="num">${avgProb}%</span><span class="lab">Average failure probability</span></div>
+      <div class="stat-cell"><span class="num">6</span><span class="lab">Biomarkers tracked</span></div>
+    `;
+
+    if (total === 0) {
+      document.getElementById('empty-state').style.display = 'block';
+      document.getElementById('patients-table').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('patients-table').style.display = 'table';
+    document.getElementById('patients-tbody').innerHTML = patients.map(p => {
+      const pred = p.prediction || {};
+      const pct = pred.probability_failure != null ? Math.round(pred.probability_failure * 100) + '%' : '—';
+      return `
+        <tr>
+          <td>${escapeHtml(p.patient_ref)}</td>
+          <td class="num">${p.age ?? '—'} / ${p.sex ?? '—'}</td>
+          <td class="num">${p.biomarkers.nt5 ?? '—'}</td>
+          <td class="num">${p.biomarkers.uricAcid ?? '—'}</td>
+          <td class="num">${p.biomarkers.globulin ?? '—'}</td>
+          <td><span class="badge ${riskBadgeClass(pred.risk_level)}">${pred.risk_level ?? '—'}</span></td>
+          <td class="num">${pct}</td>
+          <td class="small">${fmtDate(p.created_at)}</td>
+          <td style="display:flex;gap:6px;">
+            <button class="pill-btn" onclick="viewHistory('${encodeURIComponent(p.patient_ref)}')">History</button>
+            <button class="pill-btn" onclick="removePatient(${p.id})">Remove</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  async function removePatient(id){
+    if (!confirm('Remove this patient record?')) return;
+    try {
+      await TBApi.deletePatient(id);
+      loadPatients();
+    } catch (err) {
+      alert('Could not remove: ' + err.message);
+    }
+  }
+
+  async function viewHistory(encodedRef){
+    const ref = decodeURIComponent(encodedRef);
+    const panel = document.getElementById('history-panel');
+    let records;
+    try {
+      records = await TBApi.patientHistory(ref);
+    } catch (err) {
+      alert('Could not load history: ' + err.message);
+      return;
+    }
+
+    document.getElementById('history-ref').textContent = ref;
+    document.getElementById('history-tbody').innerHTML = records.map(r => {
+      const pred = r.prediction || {};
+      const pct = pred.probability_failure != null ? Math.round(pred.probability_failure * 100) + '%' : '—';
+      return `
+        <tr>
+          <td class="small">${fmtDate(r.created_at)}</td>
+          <td class="num">${r.biomarkers.nt5 ?? '—'}</td>
+          <td class="num">${r.biomarkers.uricAcid ?? '—'}</td>
+          <td class="num">${r.biomarkers.globulin ?? '—'}</td>
+          <td class="num">${r.biomarkers.creatinine ?? '—'}</td>
+          <td class="num">${r.biomarkers.cystatinC ?? '—'}</td>
+          <td class="num">${r.biomarkers.ast ?? '—'}</td>
+          <td><span class="badge ${riskBadgeClass(pred.risk_level)}">${pred.risk_level ?? '—'}</span></td>
+          <td class="num">${pct}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Trend line of failure probability across visits, oldest to newest.
+    if (records.length > 1) {
+      const points = records.map((r, i) => ({
+        x: i / (records.length - 1),
+        y: r.prediction ? r.prediction.probability_failure : 0,
+      }));
+      drawLineChart(document.getElementById('history-trend'), [{ points, color: '#B5482F' }], {
+        ariaLabel: 'Failure probability trend across visits',
+        xLabel: 'Visit sequence (oldest → newest)',
+        yLabel: 'Probability of failure',
+      });
+    } else {
+      document.getElementById('history-trend').innerHTML = '<p class="small">Register this patient again on a future visit to see a trend line here.</p>';
+    }
+
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('history-close').addEventListener('click', () => {
+    document.getElementById('history-panel').style.display = 'none';
+  });
+</script>
+</body>
+</html>

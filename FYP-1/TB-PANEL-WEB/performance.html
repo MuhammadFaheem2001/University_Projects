@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Model performance · TB Outcome Panel</title>
+<meta name="description" content="Comparison of feature-selection and machine-learning model combinations.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html" class="active">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:36px;">
+  <div class="container">
+    <span class="eyebrow">7 feature-selection methods × 12 classifiers</span>
+    <h1 style="max-width:24ch;">84 combinations, one winner</h1>
+    <p class="lede">Every classifier was paired with every feature-selection method and evaluated
+    with 4-fold cross-validation on an 80/20 train/test split. The table below reproduces the
+    top five combinations by test-set AUC and accuracy.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Top 5 prediction models — test set</h3>
+      <div class="table-wrap">
+        <table id="perf-table">
+          <thead>
+            <tr>
+              <th>Rank</th><th># Features</th><th>Classifier</th><th>Selection</th>
+              <th>AUC</th><th>Accuracy</th><th>Sensitivity</th><th>Specificity</th>
+            </tr>
+          </thead>
+          <tbody id="perf-tbody"></tbody>
+        </table>
+      </div>
+      <p class="small" style="margin-top:12px;">Highlighted row: the deployed model — KNN classifier,
+      six features selected by Mutual Information (5′-NT, AST, creatinine, uric acid, cystatin C, globulin).</p>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2">
+    <div class="panel">
+      <h3 class="mt-0">ROC curve — winning model</h3>
+      <p class="small">Illustrative curve consistent with the reported AUC of 0.87 (test set).</p>
+      <div class="chart-box" id="roc-chart"></div>
+      <div class="legend">
+        <span><i style="background:#2F6F62"></i>KNN + MI (AUC 0.87)</span>
+        <span><i style="background:#DBE3DE"></i>Random classifier (AUC 0.50)</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h3 class="mt-0">Confusion matrix — test set (n=218)</h3>
+      <div id="confusion-grid" style="display:grid;grid-template-columns:auto 1fr 1fr;gap:2px;max-width:420px;margin-top:16px;"></div>
+      <p class="small" style="margin-top:14px;">66 true negatives, 30 false positives, 10 false
+      negatives, 112 true positives — high specificity (0.92) but comparatively lower sensitivity
+      (0.69), consistent with a class-imbalance bias toward predicting the majority outcome.</p>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Why K-Nearest Neighbours?</h3>
+      <div class="grid-2">
+        <div>
+          <h4>Strengths in this setting</h4>
+          <ul class="small">
+            <li>Shines on small, low-dimensional datasets — exactly this cohort after MI reduced 94 features to 6.</li>
+            <li>Transparent and easy to interpret: prediction rests on similarity to nearby cases.</li>
+            <li>Minimal parameter tuning required to reach strong performance.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Known limitations</h4>
+          <ul class="small">
+            <li>High specificity / lower sensitivity — biased toward the majority (cured) class.</li>
+            <li>Suffers from the "curse of dimensionality" if feature count grows.</li>
+            <li>Computationally heavier than tree-based methods at large scale; sensitive to noisy neighbours.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+  initPerformancePage();
+})();
+</script>
+<script>
+  const FALLBACK_PERF = [
+    { rank: 1, features: 6, classifier: 'KNN', selection: 'MI', test: { auc: 0.87, acc: 0.82, sensitivity: 0.69, specificity: 0.92 }, selected: true },
+    { rank: 2, features: 5, classifier: 'SVM', selection: 'MI', test: { auc: 0.87, acc: 0.79, sensitivity: 0.56, specificity: 0.97 }, selected: false },
+    { rank: 3, features: 10, classifier: 'Random Forest', selection: 'MI', test: { auc: 0.87, acc: 0.79, sensitivity: 0.59, specificity: 0.94 }, selected: false },
+    { rank: 4, features: 7, classifier: 'SVM', selection: 'MI', test: { auc: 0.86, acc: 0.79, sensitivity: 0.68, specificity: 0.88 }, selected: false },
+    { rank: 5, features: 8, classifier: 'Bagging', selection: 'MI', test: { auc: 0.86, acc: 0.78, sensitivity: 0.65, specificity: 0.89 }, selected: false },
+  ];
+
+  async function loadPerf(){
+    try { return await TBApi.modelPerformance(); }
+    catch (e) { return FALLBACK_PERF; }
+  }
+
+  function initPerformancePage(){
+    loadPerf().then(rows => {
+      const tbody = document.getElementById('perf-tbody');
+      tbody.innerHTML = rows.map(r => `
+        <tr class="${r.selected ? 'highlight' : ''}">
+          <td>${r.rank}</td>
+          <td class="num">${r.features}</td>
+          <td>${r.classifier}${r.selected ? ' <span class="badge badge-teal">deployed</span>' : ''}</td>
+          <td>${r.selection}</td>
+          <td class="num">${r.test.auc.toFixed(2)}</td>
+          <td class="num">${r.test.acc.toFixed(2)}</td>
+          <td class="num">${r.test.sensitivity.toFixed(2)}</td>
+          <td class="num">${r.test.specificity.toFixed(2)}</td>
+        </tr>
+      `).join('');
+    });
+
+    // ROC curve — illustrative curve shaped to pass near the reported operating point
+    const rocPoints = [
+      {x:0,y:0}, {x:0.02,y:0.35}, {x:0.05,y:0.55}, {x:0.08,y:0.69},
+      {x:0.15,y:0.80}, {x:0.25,y:0.87}, {x:0.4,y:0.92}, {x:0.6,y:0.96},
+      {x:0.8,y:0.99}, {x:1,y:1}
+    ];
+    drawLineChart(document.getElementById('roc-chart'), [
+      { points: rocPoints, color: '#2F6F62' }
+    ], { ariaLabel: 'ROC curve, AUC 0.87' });
+
+    // confusion matrix grid
+    const cm = [
+      ['', 'Predicted: Cured', 'Predicted: Failure'],
+      ['Actual: Cured', 66, 30],
+      ['Actual: Failure', 10, 112],
+    ];
+    const grid = document.getElementById('confusion-grid');
+    cm.forEach((row, ri) => {
+      row.forEach((cell, ci) => {
+        const div = document.createElement('div');
+        const isHeader = ri === 0 || ci === 0;
+        div.style.padding = '12px';
+        div.style.fontSize = '0.82rem';
+        div.style.fontFamily = isHeader ? 'Inter, sans-serif' : 'IBM Plex Mono, monospace';
+        div.style.fontWeight = isHeader ? '600' : '600';
+        div.style.background = isHeader ? '#ECF1EF' : (ri===ci ? '#E4EFEC' : '#F6E7E2');
+        div.style.color = isHeader ? '#59695F' : (ri===ci ? '#2F6F62' : '#B5482F');
+        div.style.textAlign = ci===0 ? 'left' : 'center';
+        div.textContent = cell;
+        grid.appendChild(div);
+      });
+    });
+  }
+</script>
+</body>
+</html>

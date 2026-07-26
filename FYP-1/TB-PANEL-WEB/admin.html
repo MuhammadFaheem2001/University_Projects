@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Admin · TB Outcome Panel</title>
+<meta name="description" content="Platform administration: accounts and patient records overview.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="guarded-content" style="display:none;">
+  <section class="hero" style="padding-bottom:28px;">
+    <div class="container">
+      <span class="eyebrow danger">Admin</span>
+      <h1 style="max-width:22ch;">Platform overview</h1>
+      <p class="lede" style="margin:0;">Every account and every registered patient, across every
+      doctor. Use carefully — deletions here are permanent.</p>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="stat-row" id="admin-stats"></div>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container grid-2" style="align-items:start;">
+      <div class="panel">
+        <h3 class="mt-0">Accounts</h3>
+        <div class="table-wrap">
+          <table id="users-table">
+            <thead>
+              <tr><th>Name</th><th>Email</th><th>Role</th><th>Patients</th><th>Joined</th><th></th></tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="mt-0">Role breakdown</h3>
+        <div class="chart-box" id="role-chart"></div>
+        <hr class="divider">
+        <h3>Risk breakdown (all records)</h3>
+        <div class="chart-box" id="risk-chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;">
+          <h3 class="mt-0">All patient records</h3>
+          <input type="search" id="patient-filter" placeholder="Filter by patient ID or doctor…"
+                 style="font-family:var(--mono);padding:8px 12px;border:1px solid var(--line-strong);border-radius:var(--radius);min-width:220px;">
+        </div>
+        <div class="table-wrap">
+          <table id="all-patients-table">
+            <thead>
+              <tr>
+                <th>Patient</th><th>Doctor</th><th>5′-NT</th><th>Uric acid</th>
+                <th>Globulin</th><th>Risk</th><th>Probability</th><th>Registered</th>
+              </tr>
+            </thead>
+            <tbody id="all-patients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Admin access required</span>
+    <h2>You don't have access to this page</h2>
+    <p class="small">Redirecting you…</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  let allUsers = [];
+  let allPatients = [];
+
+  (async () => {
+    const user = await requireAuth(['admin']);
+    if (!user) {
+      document.getElementById('guard-notice').style.display = 'block';
+      return;
+    }
+    document.getElementById('guarded-content').style.display = 'block';
+    loadAll();
+  })();
+
+  function fmtDate(iso){
+    try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch (_) { return iso; }
+  }
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+  function riskBadgeClass(level){
+    return level === 'high' ? 'badge-rust' : level === 'moderate' ? 'badge-amber' : 'badge-teal';
+  }
+
+  async function loadAll(){
+    const [stats, users, patients] = await Promise.all([
+      TBApi.adminStats(), TBApi.adminUsers(), TBApi.adminAllPatients(),
+    ]);
+    allUsers = users;
+    allPatients = patients;
+
+    document.getElementById('admin-stats').innerHTML = `
+      <div class="stat-cell"><span class="num">${stats.total_doctors}</span><span class="lab">Doctor accounts</span></div>
+      <div class="stat-cell"><span class="num">${stats.total_patient_accounts}</span><span class="lab">Patient accounts</span></div>
+      <div class="stat-cell"><span class="num">${stats.total_records}</span><span class="lab">Total patient records</span></div>
+      <div class="stat-cell"><span class="num text-rust">${stats.high_risk_records}</span><span class="lab">High-risk records</span></div>
+    `;
+
+    renderUsers();
+    renderPatients(allPatients);
+
+    drawHBarChart(document.getElementById('role-chart'), [
+      { label: 'Doctors', value: stats.total_doctors, color: '#2F6F62' },
+      { label: 'Patients', value: stats.total_patient_accounts, color: '#2E5F8A' },
+      { label: 'Admins', value: users.filter(u => u.role === 'admin').length, color: '#6B4A8A' },
+    ], { max: Math.max(stats.total_doctors, stats.total_patient_accounts, 1) * 1.2 });
+
+    const riskCounts = { low: 0, moderate: 0, high: 0 };
+    allPatients.forEach(p => { if (p.prediction) riskCounts[p.prediction.risk_level]++; });
+    drawHBarChart(document.getElementById('risk-chart'), [
+      { label: 'Low', value: riskCounts.low, color: '#2F6F62' },
+      { label: 'Moderate', value: riskCounts.moderate, color: '#B4832A' },
+      { label: 'High', value: riskCounts.high, color: '#B5482F' },
+    ], { max: Math.max(riskCounts.low, riskCounts.moderate, riskCounts.high, 1) * 1.2 });
+  }
+
+  function renderUsers(){
+    document.getElementById('users-tbody').innerHTML = allUsers.map(u => `
+      <tr>
+        <td>${escapeHtml(u.name)}</td>
+        <td class="small">${escapeHtml(u.email)}</td>
+        <td><span class="badge ${u.role === 'admin' ? 'badge-accent' : u.role === 'patient' ? 'badge-info' : 'badge-teal'}">${u.role}</span></td>
+        <td class="num">${u.patient_count}</td>
+        <td class="small">${fmtDate(u.created_at)}</td>
+        <td>${u.role === 'admin' ? '' : `<button class="pill-btn" onclick="deleteUser(${u.id})">Remove</button>`}</td>
+      </tr>
+    `).join('');
+  }
+
+  function renderPatients(patients){
+    document.getElementById('all-patients-tbody').innerHTML = patients.map(p => {
+      const pred = p.prediction || {};
+      const pct = pred.probability_failure != null ? Math.round(pred.probability_failure * 100) + '%' : '—';
+      return `
+        <tr>
+          <td>${escapeHtml(p.patient_ref)}</td>
+          <td class="small">${escapeHtml(p.doctor_name)}</td>
+          <td class="num">${p.biomarkers.nt5 ?? '—'}</td>
+          <td class="num">${p.biomarkers.uricAcid ?? '—'}</td>
+          <td class="num">${p.biomarkers.globulin ?? '—'}</td>
+          <td><span class="badge ${riskBadgeClass(pred.risk_level)}">${pred.risk_level ?? '—'}</span></td>
+          <td class="num">${pct}</td>
+          <td class="small">${fmtDate(p.created_at)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('patient-filter').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) { renderPatients(allPatients); return; }
+    renderPatients(allPatients.filter(p =>
+      p.patient_ref.toLowerCase().includes(q) || (p.doctor_name || '').toLowerCase().includes(q)
+    ));
+  });
+
+  async function deleteUser(id){
+    if (!confirm('Remove this account? This also deletes every patient record they registered.')) return;
+    try {
+      await TBApi.adminDeleteUser(id);
+      loadAll();
+    } catch (err) {
+      alert('Could not remove: ' + err.message);
+    }
+  }
+</script>
+</body>
+</html>

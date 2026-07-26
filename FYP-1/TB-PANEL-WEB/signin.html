@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Sign in · TB Outcome Panel</title>
+<meta name="description" content="Sign in to your TB Outcome Panel account.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container" style="display:flex;align-items:center;height:64px;">
+    <a href="signin.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+  </div>
+</header>
+
+<div class="auth-shell">
+  <div class="auth-side">
+    <span class="eyebrow" style="color:#8FC2B6;">Welcome back</span>
+    <h2>Pick up right where you left off.</h2>
+    <p style="max-width:38ch;">Sign in to see your registered patients, revisit past risk
+    scores, and register new admissions to the panel.</p>
+    <div class="gauge-strip" style="margin-top:32px;grid-template-columns:repeat(3,1fr);">
+      <div class="gauge"><span class="g-label">5′-NT</span><span class="g-value">9.5 <span style="font-size:.68em;font-weight:400;">U/L</span></span><div class="g-track"><div class="g-fill" style="width:45%"></div></div></div>
+      <div class="gauge"><span class="g-label">Uric Acid</span><span class="g-value">5.4 <span style="font-size:.68em;font-weight:400;">mg/dL</span></span><div class="g-track"><div class="g-fill" style="width:55%"></div></div></div>
+      <div class="gauge"><span class="g-label">Globulin</span><span class="g-value">30 <span style="font-size:.68em;font-weight:400;">g/L</span></span><div class="g-track"><div class="g-fill" style="width:50%"></div></div></div>
+    </div>
+  </div>
+
+  <div class="auth-form-col">
+    <div class="auth-card">
+      <span class="eyebrow">Account</span>
+      <h1 style="font-size:1.8rem;">Sign in</h1>
+      <p class="small" style="margin-bottom:24px;">New here? <a href="signup.html">Create an account</a> instead.</p>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <form id="signin-form">
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@hospital.org" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-teal btn-block" id="signin-submit">Sign in</button>
+      </form>
+
+      <p class="auth-switch">Don't have an account? <a href="signup.html">Sign up free</a></p>
+      <p class="small" style="text-align:center;margin-top:8px;">Demo admin login: <code>admin@tbpanel.local</code> / <code>ChangeMe123!</code></p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  function destinationForRole(role){
+    if (role === 'admin') return 'admin.html';
+    if (role === 'patient') return 'patient-dashboard.html';
+    return 'dashboard.html';
+  }
+
+  function getNextParam(role){
+    const params = new URLSearchParams(window.location.search);
+    return params.get('next') || destinationForRole(role);
+  }
+
+  // If already signed in, skip straight to destination.
+  TBApi.me().then(({ user }) => { window.location.href = getNextParam(user.role); }).catch(() => {});
+
+  const form = document.getElementById('signin-form');
+  const errorBox = document.getElementById('auth-error');
+  const submitBtn = document.getElementById('signin-submit');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    try {
+      const { user } = await TBApi.signin({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+      });
+      window.location.href = getNextParam(user.role);
+    } catch (err) {
+      errorBox.textContent = err.message || 'Could not sign in.';
+      errorBox.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  });
+</script>
+</body>
+</html>

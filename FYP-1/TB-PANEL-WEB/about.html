@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>About · TB Outcome Panel</title>
+<meta name="description" content="Background on the TB treatment outcome prediction project.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html" class="active">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:40px;">
+  <div class="container">
+    <span class="eyebrow">About this project</span>
+    <h1 style="max-width:20ch;">Turning a retrospective cohort into a working screening tool</h1>
+    <p class="lede">This site operationalizes the findings of a 2025 retrospective study on
+    tuberculosis treatment outcomes, translating its best-performing model into an
+    interactive panel clinicians and researchers can explore.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container grid-2">
+    <div class="panel">
+      <h3>The study</h3>
+      <p><strong>Wang et al.</strong>, "Prediction of tuberculosis treatment outcomes using
+      biochemical markers with machine learning," <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      <p>Data were collected retrospectively from 2,520 TB patients admitted to Changzhou Third
+      People's Hospital, China, between November 2019 and January 2023. After excluding HIV
+      infection, pregnancy, and non-active TB, 1,990 patients remained; 904 were lost to
+      follow-up, leaving 1,086 patients with a confirmed outcome — cured or treatment failure —
+      for modelling.</p>
+      <p>The study's central contribution was expanding "treatment failure" to include
+      discontinuation of therapy, in line with WHO's 2021 revised outcome definitions —
+      not just mortality or drug resistance, which are comparatively rare and harder to model
+      from routine data.</p>
+    </div>
+    <div class="panel">
+      <h3>Why this matters</h3>
+      <p>Most TB prognosis research targets rare, severe endpoints — death, multidrug
+      resistance — using omics or imaging data that isn't available in most clinics. This
+      study instead targeted the far more common outcome of treatment discontinuation, using
+      only a routine admission blood panel.</p>
+      <p>That combination — a common outcome, an inexpensive input — is what makes the result
+      practical to deploy: no genomic sequencing, no specialist imaging, just six values a
+      hospital lab already produces on day one.</p>
+      <p>441 of the 479 treatment failures in this cohort were attributed specifically to
+      drug-related adverse reactions leading to discontinuation, not resistance or death —
+      underscoring that most failure here is a preventable, monitorable event.</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <hr class="divider">
+    <div class="section-head">
+      <span class="eyebrow">How this site is organized</span>
+      <h2>What each page covers</h2>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Predict</h3>
+        <p>Enter six biomarker values, get a risk score and explanation.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Insights</h3>
+        <p>Interactive charts of the cohort: demographics, comorbidities, discontinuation causes.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Performance</h3>
+        <p>How 84 feature-selection × model combinations were compared, and why KNN + MI won.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Explainability</h3>
+        <p>SHAP-based breakdown of which biomarkers move the prediction, and by how much.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Methodology</h3>
+        <p>Preprocessing, feature selection, validation strategy, and the study's own stated limitations.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">→</div>
+        <h3>Contact</h3>
+        <p>Reach out with questions, corrections, or requests to extend the model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-alt">
+  <div class="container">
+    <div class="disclaimer" style="max-width:760px;">
+      <strong>Attribution:</strong> Clinical figures, model metrics, and SHAP values reproduced
+      here are drawn directly from the published paper (open access, CC BY-NC-ND 4.0). This
+      site's backend uses a transparent scoring approximation of the described model rather than
+      the authors' original trained artifact — see <a href="methodology.html">Methodology</a>
+      for details on how to substitute a real trained model.
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Insights · TB Outcome Panel</title>
+<meta name="description" content="Cohort data insights for the TB treatment outcome study.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html" class="active">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero" style="padding-bottom:36px;">
+  <div class="container">
+    <span class="eyebrow">1,086 modelled patients</span>
+    <h1 style="max-width:22ch;">The cohort, broken down</h1>
+    <p class="lede">Interactive charts drawn from the study's reported statistics — patient flow,
+    outcome split, discontinuation causes, and which comorbidities significantly separated
+    cured from failed-treatment patients.</p>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Patient flow</h3>
+      <div class="grid-3" id="flow-grid" style="gap:12px;"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2">
+    <div class="panel">
+      <h3 class="mt-0">Outcome distribution</h3>
+      <div class="chart-box" id="chart-outcome"></div>
+      <div class="legend" id="legend-outcome"></div>
+    </div>
+    <div class="panel">
+      <h3 class="mt-0">Reasons for treatment discontinuation</h3>
+      <p class="small">Among patients who discontinued therapy, by adverse reaction (not mutually exclusive).</p>
+      <div class="chart-box" id="chart-discontinuation"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container grid-2">
+    <div class="panel">
+      <h3 class="mt-0">Sex distribution by outcome</h3>
+      <div class="chart-box" id="chart-sex"></div>
+    </div>
+    <div class="panel">
+      <h3 class="mt-0">Treatment regimen vs. outcome</h3>
+      <p class="small">HRZE (isoniazid, rifampicin, pyrazinamide, ethambutol) vs. other regimens.</p>
+      <div class="chart-box" id="chart-regimen"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tight">
+  <div class="container">
+    <div class="panel">
+      <h3 class="mt-0">Comorbidities: which ones significantly differ between outcomes</h3>
+      <p class="small">p-values from the study's group comparisons (χ² / Fisher's exact test). Bars below the 0.05 line are statistically significant.</p>
+      <div class="chart-box" id="chart-pvalues"></div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+  initInsights();
+})();
+</script>
+<script>
+  const FALLBACK_STATS = {
+    flow: { initial: 2520, excluded: 434, after_exclusion: 1990, lost_to_follow_up: 904, cured: 607, treatment_failure: 479, final_modelled: 1086 },
+    outcome_distribution: [
+      { label: 'Cured', value: 607, color: '#2F6F62' },
+      { label: 'Treatment failure', value: 479, color: '#B5482F' },
+    ],
+    discontinuation_reasons: [
+      { label: 'Thrombocytopenia', value: 321 },
+      { label: 'Liver dysfunction', value: 245 },
+      { label: 'Hyperuricemia', value: 133 },
+      { label: 'Rash', value: 14 },
+    ],
+    sex: { cured: { male: 406, female: 201 }, failure: { male: 319, female: 160 } },
+    comorbidities_pvalues: [
+      { label: 'Diabetes', p: 0.001, significant: true },
+      { label: 'Hypertension', p: 0.001, significant: true },
+      { label: 'History of TB', p: 0.012, significant: true },
+      { label: 'Cancer', p: 0.044, significant: true },
+      { label: 'Other respiratory disease', p: 0.082, significant: false },
+      { label: 'Digestive disease', p: 0.120, significant: false },
+    ],
+    treatment_regimen: [
+      { label: 'HRZE', cured: 362, failure: 340 },
+      { label: 'Other regimens', cured: 245, failure: 139 },
+    ],
+  };
+
+  async function loadStats(){
+    try { return await TBApi.datasetStats(); }
+    catch (e) { return FALLBACK_STATS; }
+  }
+
+  function initInsights(){
+    loadStats().then(stats => {
+    // Patient flow
+    const flowGrid = document.getElementById('flow-grid');
+    const flowItems = [
+      ['Initially diagnosed', stats.flow.initial],
+      ['Excluded (HIV/pregnancy/inactive)', stats.flow.excluded ?? (stats.flow.initial - stats.flow.after_exclusion)],
+      ['After exclusion', stats.flow.after_exclusion],
+      ['Lost to follow-up', stats.flow.lost_to_follow_up],
+      ['Cured', stats.flow.cured],
+      ['Treatment failure', stats.flow.treatment_failure],
+    ];
+    flowGrid.innerHTML = flowItems.map(([label, val]) => `
+      <div class="card" style="padding:16px;">
+        <span class="g-value mono" style="font-size:1.3rem;font-weight:600;">${val.toLocaleString()}</span>
+        <p class="small" style="margin:4px 0 0;">${label}</p>
+      </div>
+    `).join('');
+
+    // Outcome donut
+    drawDonut(document.getElementById('chart-outcome'), stats.outcome_distribution, { centerLabel: 'modelled' });
+    document.getElementById('legend-outcome').innerHTML = stats.outcome_distribution.map(d =>
+      `<span><i style="background:${d.color}"></i>${d.label} — ${d.value}</span>`
+    ).join('');
+
+    // Discontinuation reasons
+    drawHBarChart(document.getElementById('chart-discontinuation'),
+      stats.discontinuation_reasons.map(d => ({ label: d.label, value: d.value, color: '#B5482F' })),
+      { max: 400 });
+
+    // Sex distribution grouped bars (simple two-series hbar via two charts stacked)
+    const sexData = [
+      { label: 'Cured · Male', value: stats.sex.cured.male, color: '#2F6F62' },
+      { label: 'Cured · Female', value: stats.sex.cured.female, color: '#7FA89D' },
+      { label: 'Failure · Male', value: stats.sex.failure.male, color: '#B5482F' },
+      { label: 'Failure · Female', value: stats.sex.failure.female, color: '#D89684' },
+    ];
+    drawHBarChart(document.getElementById('chart-sex'), sexData, { max: 450 });
+
+    // Treatment regimen
+    const regimenData = [];
+    stats.treatment_regimen.forEach(r => {
+      regimenData.push({ label: r.label + ' · Cured', value: r.cured, color: '#2F6F62' });
+      regimenData.push({ label: r.label + ' · Failure', value: r.failure, color: '#B5482F' });
+    });
+    drawHBarChart(document.getElementById('chart-regimen'), regimenData, { max: 400 });
+
+    // p-values (invert so smaller p = larger bar, capped)
+    const pData = stats.comorbidities_pvalues.map(c => ({
+      label: c.label,
+      value: Math.min(c.p, 0.2),
+      color: c.significant ? '#B5482F' : '#B9C6BF',
+    }));
+    drawHBarChart(document.getElementById('chart-pvalues'), pData, { max: 0.2, format: v => 'p=' + v.toFixed(3) });
+    });
+  }
+</script>
+</body>
+</html>

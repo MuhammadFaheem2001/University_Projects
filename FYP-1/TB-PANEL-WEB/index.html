@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>TB Outcome Panel · Predicting tuberculosis treatment outcomes</title>
+<meta name="description" content="A machine-learning tool predicting tuberculosis treatment outcomes from admission biochemical markers.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+<div id="guarded-content" style="display:none;">
+
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Admission panel · 6 biomarkers</span>
+      <h1>Read a treatment-failure risk before the first dose is given.</h1>
+      <p class="lede">Elevated 5′-nucleotidase, uric acid, and globulin at admission are early flags for
+      tuberculosis treatment discontinuation. This tool applies a mutual-information–selected
+      K-Nearest-Neighbour model, trained on 1,086 TB cases, to those six routine biochemical values.</p>
+      <div class="hero-actions">
+        <a href="predict.html" class="btn btn-primary">Run a prediction →</a>
+        <a href="insights.html" class="btn btn-outline">Explore the cohort data</a>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <span class="eyebrow" style="margin-bottom:16px;">Live biomarker panel</span>
+        <div class="gauge-strip" id="hero-gauges"></div>
+        <p class="small" style="margin-top:16px;margin-bottom:0;">Reference bands shown are typical adult clinical ranges. This preview uses sample values — try the <a href="predict.html">prediction tool</a> with a real panel.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="stat-row">
+      <div class="stat-cell"><span class="num">0.87</span><span class="lab">Test-set AUC</span></div>
+      <div class="stat-cell"><span class="num">1,086</span><span class="lab">Patients modelled</span></div>
+      <div class="stat-cell"><span class="num">6</span><span class="lab">Key biomarkers</span></div>
+      <div class="stat-cell"><span class="num">84</span><span class="lab">Selection × model combos tested</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">What this tool does</span>
+      <h2>Three tools, one biomarker panel</h2>
+      <p>Everything on this site is derived from the same six-feature admission panel identified by
+      the underlying study. Each page answers a different question about it.</p>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">01</div>
+        <h3>Predict an outcome</h3>
+        <p>Enter a patient's admission values for the six biomarkers and get a treatment-failure
+        probability, risk band, and a plain-language explanation of what drove the score.</p>
+        <a href="predict.html">Open the prediction tool →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">02</div>
+        <h3>Explore the cohort</h3>
+        <p>See how outcomes split by comorbidity, treatment regimen, and discontinuation reason
+        across the 1,086-patient study cohort.</p>
+        <a href="insights.html">View data insights →</a>
+      </div>
+      <div class="card">
+        <div class="card-icon">03</div>
+        <h3>Compare the models</h3>
+        <p>Twelve classifiers, seven feature-selection methods, 84 combinations. See how the
+        winning KNN + Mutual-Information pairing was chosen.</p>
+        <a href="performance.html">See model performance →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-paper">
+  <div class="container grid-2">
+    <div>
+      <span class="eyebrow">The clinical problem</span>
+      <h2>Discontinuation is now counted as failure</h2>
+      <p>Under WHO's revised outcome definitions, a patient who stops therapy — even
+      temporarily, even if they later resume — is classified as a treatment failure. In this
+      cohort, 479 of 1,086 patients (44%) fell into that category, most often after
+      thrombocytopenia, liver dysfunction, or hyperuricemia driven by first-line drugs.</p>
+      <p>Because these adverse reactions are detectable in routine bloodwork <em>before</em>
+      treatment begins, an admission-day risk score gives clinicians a window to intervene —
+      through closer monitoring, dose adjustment, or enhanced patient education — before
+      symptoms emerge.</p>
+      <a href="methodology.html" class="btn btn-outline">Read the full methodology →</a>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">Cohort at a glance</span>
+      <div id="home-donut" class="chart-box"></div>
+      <div class="legend" id="home-legend"></div>
+    </div>
+  </div>
+</section>
+
+<section class="bg-alt">
+  <div class="container">
+    <div class="section-head center" style="margin-left:auto;margin-right:auto;">
+      <span class="eyebrow">Disclaimer</span>
+      <h2>A research demonstration, not a diagnostic device</h2>
+    </div>
+    <div class="disclaimer" style="max-width:760px;margin:0 auto;">
+      This site reproduces the methodology of a single-center retrospective study
+      (Changzhou Third People's Hospital, n=1,086) with no external validation. Predictions
+      here are for educational exploration only and must not inform real treatment decisions.
+      See <a href="methodology.html">Methodology</a> for the study's own stated limitations.
+    </div>
+  </div>
+</section>
+
+
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>Please sign in to continue</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>TB Outcome Panel</h4>
+        <p class="small" style="max-width:36ch;">A machine-learning prognosis tool built on admission biochemical markers, adapted from Wang et al., <em>BMC Infectious Diseases</em> (2025) 25:229. For research and educational demonstration only — not a certified diagnostic device.</p>
+      </div>
+      <div>
+        <h4>Site</h4>
+        <ul>
+          <li><a href="predict.html">Prediction tool</a></li>
+          <li><a href="insights.html">Data insights</a></li>
+          <li><a href="performance.html">Model performance</a></li>
+          <li><a href="methodology.html">Methodology</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reference</h4>
+        <ul>
+          <li><a href="https://doi.org/10.1186/s12879-025-10609-y" target="_blank" rel="noopener">Source study (DOI)</a></li>
+          <li><a href="about.html">About this project</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+(async () => {
+  const user = await requireAuth();
+  if (!user) {
+    document.getElementById('guard-notice').style.display = 'block';
+    return;
+  }
+  document.getElementById('guarded-content').style.display = 'block';
+})();
+</script>
+<script src="js/charts.js"></script>
+<script>
+  renderGaugeStrip(document.getElementById('hero-gauges'), {
+    nt5: 14, uricAcid: 8.1, globulin: 33, creatinine: 88, cystatinC: 0.95, ast: 46
+  });
+
+  drawDonut(document.getElementById('home-donut'), [
+    { label: 'Cured', value: 607, color: '#2F6F62' },
+    { label: 'Treatment failure', value: 479, color: '#B5482F' },
+  ], { centerLabel: 'modelled' });
+
+  document.getElementById('home-legend').innerHTML = `
+    <span><i style="background:#2F6F62"></i>Cured — 607 (56%)</span>
+    <span><i style="background:#B5482F"></i>Treatment failure — 479 (44%)</span>
+  `;
+</script>
+</body>
+</html>

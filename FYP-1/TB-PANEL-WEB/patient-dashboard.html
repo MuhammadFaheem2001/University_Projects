@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>My records · TB Outcome Panel</title>
+<meta name="description" content="Your own admission records and risk history.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="guarded-content" style="display:none;">
+  <section class="hero" style="padding-bottom:28px;">
+    <div class="container">
+      <span class="eyebrow">Signed in as <span id="user-name-eyebrow"></span></span>
+      <h1 style="max-width:20ch;">Your records</h1>
+      <p class="lede" style="margin:0;">Every admission a doctor has linked to your account
+      email, most recent first. Nothing here is shared with anyone but you and the doctors who
+      registered these visits.</p>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="stat-row" id="dash-stats"></div>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container">
+      <div class="panel" id="empty-panel" style="display:none;">
+        <h3 class="mt-0">No records yet</h3>
+        <p class="small">You don't have any linked visits yet. Ask your doctor to include
+        <strong id="empty-email"></strong> as your "patient account email" the next time they
+        register an admission panel for you.</p>
+      </div>
+
+      <div class="panel" id="trend-panel" style="display:none;">
+        <h3 class="mt-0">Risk over time</h3>
+        <p class="small">Estimated probability of treatment failure at each visit, oldest to newest.</p>
+        <div class="chart-box" id="trend-chart"></div>
+      </div>
+
+      <div class="panel" id="records-panel" style="display:none;">
+        <h3 class="mt-0">Visit history</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Visit date</th><th>Doctor</th><th>5′-NT</th><th>Uric acid</th>
+                <th>Globulin</th><th>Creatinine</th><th>Cystatin C</th><th>AST</th>
+                <th>Risk</th><th>Probability</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>You need a patient account to view this page</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  (async () => {
+    const user = await requireAuth(['patient']);
+    if (!user) {
+      document.getElementById('guard-notice').style.display = 'block';
+      return;
+    }
+    document.getElementById('guarded-content').style.display = 'block';
+    document.getElementById('user-name-eyebrow').textContent = user.name;
+    document.getElementById('empty-email').textContent = user.email;
+    loadRecords();
+  })();
+
+  function riskBadgeClass(level){
+    return level === 'high' ? 'badge-rust' : level === 'moderate' ? 'badge-amber' : 'badge-teal';
+  }
+  function fmtDate(iso){
+    try { return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch (_) { return iso; }
+  }
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+
+  async function loadRecords(){
+    let records = [];
+    try {
+      records = await TBApi.myRecords();
+    } catch (err) {
+      document.getElementById('empty-panel').style.display = 'block';
+      document.getElementById('empty-panel').querySelector('p').textContent = 'Could not load your records: ' + err.message;
+      return;
+    }
+
+    const total = records.length;
+    const highRisk = records.filter(r => r.prediction && r.prediction.risk_level === 'high').length;
+    const latest = records[0];
+    const latestPct = latest && latest.prediction ? Math.round(latest.prediction.probability_failure * 100) : null;
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-cell"><span class="num">${total}</span><span class="lab">Recorded visits</span></div>
+      <div class="stat-cell"><span class="num text-rust">${highRisk}</span><span class="lab">Flagged high risk</span></div>
+      <div class="stat-cell"><span class="num">${latestPct != null ? latestPct + '%' : '—'}</span><span class="lab">Most recent probability</span></div>
+      <div class="stat-cell"><span class="num">${latest ? (latest.prediction?.risk_level ?? '—') : '—'}</span><span class="lab">Most recent risk level</span></div>
+    `;
+
+    if (total === 0) {
+      document.getElementById('empty-panel').style.display = 'block';
+      return;
+    }
+
+    document.getElementById('records-panel').style.display = 'block';
+    document.getElementById('records-tbody').innerHTML = records.map(r => {
+      const pred = r.prediction || {};
+      const pct = pred.probability_failure != null ? Math.round(pred.probability_failure * 100) + '%' : '—';
+      return `
+        <tr>
+          <td class="small">${fmtDate(r.created_at)}</td>
+          <td class="small">${escapeHtml(r.doctor_name)}</td>
+          <td class="num">${r.biomarkers.nt5 ?? '—'}</td>
+          <td class="num">${r.biomarkers.uricAcid ?? '—'}</td>
+          <td class="num">${r.biomarkers.globulin ?? '—'}</td>
+          <td class="num">${r.biomarkers.creatinine ?? '—'}</td>
+          <td class="num">${r.biomarkers.cystatinC ?? '—'}</td>
+          <td class="num">${r.biomarkers.ast ?? '—'}</td>
+          <td><span class="badge ${riskBadgeClass(pred.risk_level)}">${pred.risk_level ?? '—'}</span></td>
+          <td class="num">${pct}</td>
+        </tr>
+      `;
+    }).join('');
+
+    if (total > 1) {
+      const oldestFirst = [...records].reverse();
+      const points = oldestFirst.map((r, i) => ({
+        x: i / (oldestFirst.length - 1),
+        y: r.prediction ? r.prediction.probability_failure : 0,
+      }));
+      document.getElementById('trend-panel').style.display = 'block';
+      drawLineChart(document.getElementById('trend-chart'), [{ points, color: '#B5482F' }], {
+        ariaLabel: 'Your failure-probability trend across visits',
+        xLabel: 'Visit sequence (oldest → newest)',
+        yLabel: 'Probability of failure',
+      });
+    }
+  }
+</script>
+</body>
+</html>

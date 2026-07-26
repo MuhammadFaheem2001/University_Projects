@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Sign up · TB Outcome Panel</title>
+<meta name="description" content="Create a TB Outcome Panel account to register patients and save predictions.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container" style="display:flex;align-items:center;height:64px;">
+    <a href="signin.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+  </div>
+</header>
+
+<div class="auth-shell">
+  <div class="auth-side">
+    <span class="eyebrow" style="color:#8FC2B6;">Free account</span>
+    <h2>Register patients. Track risk over time.</h2>
+    <p style="max-width:38ch;">Create an account to save admission panels, revisit prior
+    predictions, and build a running list of monitored patients.</p>
+    <ul class="small" style="color:rgba(246,248,246,0.75);margin-top:20px;line-height:1.9;">
+      <li>Register a patient's six-marker admission panel in under a minute</li>
+      <li>Every registration auto-scores treatment-failure risk</li>
+      <li>Your dashboard keeps a private history — nothing is shared</li>
+    </ul>
+  </div>
+
+  <div class="auth-form-col">
+    <div class="auth-card">
+      <span class="eyebrow">Account</span>
+      <h1 style="font-size:1.8rem;">Create your account</h1>
+      <p class="small" style="margin-bottom:24px;">Already registered? <a href="signin.html">Sign in</a> instead.</p>
+
+      <div class="auth-error" id="auth-error"></div>
+
+      <form id="signup-form">
+        <div class="field">
+          <label>I am a…</label>
+          <div style="display:flex;gap:10px;margin-top:2px;">
+            <label class="pill-btn" style="cursor:pointer;flex:1;justify-content:center;" id="role-doctor-label">
+              <input type="radio" name="role" value="doctor" checked style="margin:0 6px 0 0;">Doctor / Clinician
+            </label>
+            <label class="pill-btn" style="cursor:pointer;flex:1;justify-content:center;" id="role-patient-label">
+              <input type="radio" name="role" value="patient" style="margin:0 6px 0 0;">Patient
+            </label>
+          </div>
+          <span class="hint" id="role-hint" style="display:block;margin-top:8px;">
+            Doctors register patients and review their panels. Patients see only records a
+            doctor has explicitly linked to their email.
+          </span>
+        </div>
+        <div class="field">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" placeholder="Dr. Jane Rao" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="you@hospital.org" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="At least 8 characters" required minlength="8" autocomplete="new-password">
+          <div class="strength-meter"><div class="fill" id="strength-fill"></div></div>
+          <span class="hint" id="strength-hint">Use 8+ characters with a mix of letters and numbers.</span>
+        </div>
+        <div class="field">
+          <label for="confirm">Confirm password</label>
+          <input type="password" id="confirm" name="confirm" placeholder="Repeat your password" required minlength="8" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn btn-teal btn-block" id="signup-submit">Create account</button>
+        <p class="small" style="margin-top:14px;">By signing up you agree this is a demo tool and
+        not for real clinical use.</p>
+      </form>
+
+      <p class="auth-switch">Already have an account? <a href="signin.html">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  TBApi.me().then(({ user }) => {
+    window.location.href = user.role === 'patient' ? 'patient-dashboard.html' : 'dashboard.html';
+  }).catch(() => {});
+
+  const pwInput = document.getElementById('password');
+  const fill = document.getElementById('strength-fill');
+  const hint = document.getElementById('strength-hint');
+
+  pwInput.addEventListener('input', () => {
+    const v = pwInput.value;
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (v.length >= 12) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    if (/[a-z]/.test(v) && /[A-Z]/.test(v)) score++;
+
+    const pct = Math.min(100, (score / 5) * 100);
+    fill.style.width = pct + '%';
+    if (score <= 1) { fill.style.background = 'var(--danger)'; hint.textContent = 'Weak — add more characters or numbers.'; }
+    else if (score <= 3) { fill.style.background = 'var(--warning)'; hint.textContent = 'Okay — a symbol or mixed case would help.'; }
+    else { fill.style.background = 'var(--success)'; hint.textContent = 'Strong password.'; }
+  });
+
+  const roleInputs = document.querySelectorAll('input[name="role"]');
+  const roleDoctorLabel = document.getElementById('role-doctor-label');
+  const rolePatientLabel = document.getElementById('role-patient-label');
+  const roleHint = document.getElementById('role-hint');
+
+  function updateRoleUI(){
+    const checked = document.querySelector('input[name="role"]:checked').value;
+    roleDoctorLabel.classList.toggle('solid', checked === 'doctor');
+    rolePatientLabel.classList.toggle('solid', checked === 'patient');
+    roleHint.textContent = checked === 'doctor'
+      ? 'Doctors register patients, run predictions, and review admission panels.'
+      : 'Patients see only the visits a doctor has linked to their email — nothing else.';
+  }
+  roleInputs.forEach(r => r.addEventListener('change', updateRoleUI));
+  updateRoleUI();
+
+  const form = document.getElementById('signup-form');
+  const errorBox = document.getElementById('auth-error');
+  const submitBtn = document.getElementById('signup-submit');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.style.display = 'none';
+
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm').value;
+    if (password !== confirm) {
+      errorBox.textContent = 'Passwords do not match.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account…';
+
+    try {
+      const { user } = await TBApi.signup({
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        password,
+        role: document.querySelector('input[name="role"]:checked').value,
+      });
+      const dest = user.role === 'patient' ? 'patient-dashboard.html' : 'dashboard.html';
+      window.location.href = dest;
+    } catch (err) {
+      errorBox.textContent = err.message || 'Could not create your account.';
+      errorBox.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account';
+    }
+  });
+</script>
+</body>
+</html>

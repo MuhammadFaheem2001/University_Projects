@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Register a patient · TB Outcome Panel</title>
+<meta name="description" content="Register a new patient's admission biomarker panel.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="container nav-row">
+    <a href="index.html" class="brand"><span class="brand-mark"></span>TB Outcome Panel<small>&nbsp;/ ML Prognosis</small></a>
+    <nav class="nav-center">
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="predict.html">Predict</a></li>
+        <li><a href="insights.html">Insights</a></li>
+        <li><a href="performance.html">Performance</a></li>
+        <li><a href="explainability.html">Explainability</a></li>
+        <li><a href="methodology.html">Methodology</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="nav-actions">
+      <div class="nav-auth-slot" id="nav-auth-slot"></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="guarded-content" style="display:none;">
+  <section class="hero" style="padding-bottom:36px;">
+    <div class="container">
+      <span class="eyebrow">New admission</span>
+      <h1 style="max-width:22ch;">Register a patient</h1>
+      <p class="lede">Save this patient's admission panel to your dashboard. A treatment-failure
+      risk score is generated automatically and stored alongside the record.</p>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container grid-2" style="align-items:start;">
+      <div class="panel">
+        <h3 class="mt-0">Patient details</h3>
+        <div class="auth-error" id="form-error"></div>
+        <div class="auth-success" id="form-success"></div>
+
+        <form id="register-form">
+          <div class="form-grid" style="margin-bottom:8px;">
+            <div class="field">
+              <label for="patient_ref">Patient ID / name</label>
+              <input type="text" id="patient_ref" name="patient_ref" placeholder="e.g. P-1042 or initials" required>
+              <span class="hint">Reuse the same ID on a follow-up visit to build a history for this patient.</span>
+            </div>
+            <div class="field">
+              <label for="age">Age</label>
+              <input type="number" id="age" name="age" placeholder="e.g. 47" min="0" max="120">
+            </div>
+            <div class="field">
+              <label for="sex">Sex</label>
+              <select id="sex" name="sex">
+                <option value="">Not specified</option>
+                <option value="F">Female</option>
+                <option value="M">Male</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="patient_email">Patient's account email <span class="small">(optional)</span></label>
+              <input type="email" id="patient_email" name="patient_email" placeholder="patient@example.com">
+              <span class="hint">If they sign up with this email as a patient account, they'll see this record on their own dashboard.</span>
+            </div>
+          </div>
+
+          <hr class="divider" style="margin:20px 0;">
+          <h3>Admission biomarker panel</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nt5">5′-Nucleotidase (5′-NT)</label>
+              <input type="number" step="0.1" id="nt5" name="nt5" placeholder="e.g. 9.5" required>
+              <span class="hint">U/L · reference 0–11</span>
+            </div>
+            <div class="field">
+              <label for="uricAcid">Uric acid</label>
+              <input type="number" step="0.1" id="uricAcid" name="uricAcid" placeholder="e.g. 5.4" required>
+              <span class="hint">mg/dL · reference 3.5–7.2</span>
+            </div>
+            <div class="field">
+              <label for="globulin">Globulin</label>
+              <input type="number" step="0.1" id="globulin" name="globulin" placeholder="e.g. 30" required>
+              <span class="hint">g/L · reference 20–35</span>
+            </div>
+            <div class="field">
+              <label for="creatinine">Creatinine</label>
+              <input type="number" step="0.1" id="creatinine" name="creatinine" placeholder="e.g. 70" required>
+              <span class="hint">µmol/L · reference 44–133</span>
+            </div>
+            <div class="field">
+              <label for="cystatinC">Cystatin C</label>
+              <input type="number" step="0.01" id="cystatinC" name="cystatinC" placeholder="e.g. 0.85" required>
+              <span class="hint">mg/L · reference 0.51–1.09</span>
+            </div>
+            <div class="field">
+              <label for="ast">Aspartate transaminase (AST)</label>
+              <input type="number" step="0.1" id="ast" name="ast" placeholder="e.g. 24" required>
+              <span class="hint">U/L · reference 8–40</span>
+            </div>
+          </div>
+
+          <div style="margin-top:24px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-teal" id="register-submit">Register patient</button>
+            <button type="button" id="fill-sample" class="btn btn-outline">Fill sample values</button>
+            <a href="dashboard.html" class="btn btn-outline">View dashboard →</a>
+          </div>
+        </form>
+      </div>
+
+      <div>
+        <div class="panel">
+          <span class="eyebrow">Live panel</span>
+          <div class="gauge-strip" id="register-gauges"></div>
+        </div>
+        <div class="panel" id="result-panel" style="display:none;">
+          <span class="eyebrow">Auto-generated risk score</span>
+          <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;">
+            <h2 id="result-headline" style="margin:0;">—</h2>
+            <span class="badge" id="result-badge">—</span>
+          </div>
+          <p class="small" id="result-sub"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="guard-notice" id="guard-notice" style="display:none;">
+  <div class="container">
+    <span class="eyebrow">Sign-in required</span>
+    <h2>You need an account to register patients</h2>
+    <p class="small">Redirecting you to sign in…</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom">
+      <span>&copy; <span id="year"></span> TB Outcome Panel — demo build.</span>
+      <span>Not for clinical use without independent validation.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script>
+  (async () => {
+    const user = await requireAuth(['doctor', 'admin']);
+    if (!user) {
+      document.getElementById('guard-notice').style.display = 'block';
+      return;
+    }
+    document.getElementById('guarded-content').style.display = 'block';
+    initPage();
+  })();
+
+  function initPage(){
+    const gaugeEl = document.getElementById('register-gauges');
+    renderGaugeStrip(gaugeEl, {});
+
+    const bioKeys = ['nt5','uricAcid','globulin','creatinine','cystatinC','ast'];
+    function currentBio(){
+      const v = {};
+      bioKeys.forEach(k => {
+        const raw = document.getElementById(k).value;
+        v[k] = raw === '' ? null : parseFloat(raw);
+      });
+      return v;
+    }
+    bioKeys.forEach(k => {
+      document.getElementById(k).addEventListener('input', () => renderGaugeStrip(gaugeEl, currentBio()));
+    });
+
+    document.getElementById('fill-sample').addEventListener('click', () => {
+      const sample = { patient_ref: 'DEMO-' + Math.floor(Math.random()*900+100), age: 46, sex: 'F',
+        nt5: 13.8, uricAcid: 8.2, globulin: 33, creatinine: 90, cystatinC: 0.98, ast: 48 };
+      Object.entries(sample).forEach(([k,v]) => {
+        const el = document.getElementById(k);
+        if (el) el.value = v;
+      });
+      renderGaugeStrip(gaugeEl, currentBio());
+    });
+
+    const form = document.getElementById('register-form');
+    const errorBox = document.getElementById('form-error');
+    const successBox = document.getElementById('form-success');
+    const submitBtn = document.getElementById('register-submit');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      successBox.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registering…';
+
+      const payload = {
+        patient_ref: document.getElementById('patient_ref').value.trim(),
+        patient_email: document.getElementById('patient_email').value.trim() || null,
+        age: document.getElementById('age').value || null,
+        sex: document.getElementById('sex').value || null,
+        ...currentBio(),
+      };
+
+      try {
+        const patient = await TBApi.createPatient(payload);
+        successBox.textContent = `Saved ${patient.patient_ref} to your dashboard.`;
+        successBox.style.display = 'block';
+        renderResult(patient.prediction);
+        form.reset();
+        renderGaugeStrip(gaugeEl, {});
+      } catch (err) {
+        errorBox.textContent = err.message || 'Could not register this patient.';
+        errorBox.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register patient';
+      }
+    });
+
+    function renderResult(result){
+      const panel = document.getElementById('result-panel');
+      panel.style.display = 'block';
+      const failurePct = Math.round(result.probability_failure * 100);
+      const isFailure = result.prediction === 'treatment_failure';
+      document.getElementById('result-headline').textContent = isFailure ? 'Elevated risk' : 'Favorable outlook';
+      const badge = document.getElementById('result-badge');
+      badge.textContent = result.risk_level + ' risk';
+      badge.className = 'badge ' + (result.risk_level === 'high' ? 'badge-rust' : result.risk_level === 'moderate' ? 'badge-amber' : 'badge-teal');
+      document.getElementById('result-sub').textContent = `${failurePct}% estimated probability of treatment failure.`;
+    }
+  }
+</script>
+</body>
+</html>
